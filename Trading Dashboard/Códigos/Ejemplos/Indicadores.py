@@ -23,4 +23,4 @@ plt.show()
 #RSI
 aapl['RSI']=ta.RSI(aapl.Close,14)
 aapl['RSI'].plot(figsize=(15,15))
-plt.show()
+#plt.show()
