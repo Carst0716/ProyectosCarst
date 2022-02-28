@@ -1,6 +1,7 @@
 import talib as ta
 import matplotlib.pyplot as plt
 import yfinance as yf
+import statsmodels.api as sm
 
 
 plt.style.use('bmh')
@@ -24,3 +25,13 @@ plt.show()
 aapl['RSI']=ta.RSI(aapl.Close,14)
 aapl['RSI'].plot(figsize=(15,15))
 plt.show()
+
+
+
+
+
+"""
+corr = Data.set_index('Open').corr()
+sm.graphics.plot_corr(corr, xnames=list(corr.columns))
+plt.show()
+"""
