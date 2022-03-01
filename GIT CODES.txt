@@ -1,0 +1,4 @@
+git add .
+git commit -m "Name"
+git push
+git pull https://github.com/Carst0716/ProyectosCarst
