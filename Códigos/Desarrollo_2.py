@@ -28,7 +28,7 @@ def Indicadores(Data):
     Data['SMA 30']=ta.SMA(Data['Close'].values,30)
 
     #Media móvil para 100 muestras
-    Data['EMA 100']=ta.EMA(Data['Close'].values,100)
+    Data['SMA 100']=ta.EMA(Data['Close'].values,100)
 
     #Bandas de bollinger para un periodo de 30 muestras
     Data['upper_band'], Data['middle_band'], Data['lower_band']=ta.BBANDS(Data['Close'],timeperiod=20)
@@ -59,6 +59,9 @@ colors={
 app.layout = html.Div([
     html.Div(
         children=[
+
+        dcc.Store(id='store-data', data=[], storage_type='memory'),
+
         html.H2("PARÁMETROS DE ENTRADA"),  
         html.H3("Introduzca un Activo"),
         dcc.Input(id='input', value='COP=X', type='text', style={'marginRight':'10px'}),
@@ -70,9 +73,9 @@ app.layout = html.Div([
         html.H3("Escoja un Indicador"),
         dcc.Checklist(id="IndSelect",
             options={
-                "SMA 30":"SMA30",
-                "EMA 100":"EMA100",
-                "Upper Band":"UpperBand",
+                "SMA 30":"SMA 30",
+                "SMA 100":"SMA 100",
+                "Bollinger":"Bollinger",
                 "ADX":"ADX",
                 "RSI":"RSI"
                 }
@@ -88,34 +91,43 @@ app.layout = html.Div([
                     ],style={'display': 'flex', 'flex-direction': 'column'})
 
 @app.callback(
-    Output('output-graph', 'children'),
-    Output('Estado Final', 'children'),
+    Output('store-data','data'),
     Input("start", "value"),
     Input("end", "value"),
-    Input('input', 'value'),
-    Input('IndSelect','value')
+    Input('input', 'value')
 )
 
-def update_value(cur, ly, input_data, Select):
+def update_value(cur, ly, input_data):
 
     print("Descargando datos...")
-
     df=obtencionDatos(input_data,'yahoo',cur,ly)
-    
     Data=Indicadores(df)
 
     #FASE 2: Refinación de los datos
-
-    """
     print(Data.head())
     print(Data.info())
     print(Data.describe())
     print(Data[Data.duplicated(keep='first')])
-    """
 
+    return Data.to_dict('records')
+
+
+@app.callback(
+    Output('output-graph', 'children'),
+    Output('Estado Final', 'children'),
+    Input('IndSelect','value'),
+    Input('store-data','data'),
+    Input('input','value')
+)
+
+def IndPlot(Select, data, input_data):
+
+    df=pd.DataFrame(data)
+    print(Select)
+    print(df.info())
 
     if pd.isnull(Select):
-
+    
         return [html.Div(
             [dcc.Graph(
             id='example-graph',
@@ -154,7 +166,7 @@ def update_value(cur, ly, input_data, Select):
                     )
                     ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
 
-    elif "SMA 30" in Select:
+    elif "Bollinger" in Select:
 
         return [html.Div(
             [dcc.Graph(
@@ -164,7 +176,34 @@ def update_value(cur, ly, input_data, Select):
                 'data': 
                 [
                     {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data},
-                    {'x': df.index, 'y': df["SMA 30"], 'type': 'line', 'name': input_data}
+                    {'x': df.index, 'y': df["upper_band"], 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df["middle_band"], 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df["lower_band"], 'type': 'line', 'name': input_data}
+                ],
+                'layout': 
+                {
+                    'title': "Cierre para "+input_data
+                },
+                'legend':
+                {
+                    {"uno":"uno"}
+                }
+            }
+                    )
+                    ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
+
+    
+    else:
+    
+        return [html.Div(
+            [dcc.Graph(
+            id='example-graph',
+            figure=
+            {
+                'data': 
+                [
+                    {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df[Select[0]], 'type': 'line', 'name': input_data}
                 ],
                 'layout': 
                 {
@@ -175,30 +214,6 @@ def update_value(cur, ly, input_data, Select):
                     ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
 
 
-"""@app.callback(
-    Output('ind-graph','children'),
-    Input('IndSelect','value'),
-    Input('input_data', 'value')
-)
-
-def IndPlot(IndSelect, df, input_data):
-    return html.Div(
-        [dcc.Graph(
-        id='example-graph',
-        figure=
-        {
-            'data': 
-            [
-                {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data},
-            ],
-            'layout': 
-            {
-                'title': "Cierre para "+input_data
-            }
-        }
-                )
-                 ])
-"""
 
 if __name__ == '__main__':
     app.run_server(debug=True)
