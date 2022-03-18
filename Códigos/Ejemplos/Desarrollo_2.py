@@ -10,7 +10,6 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-import plotly.graph_objects as go
 
 #FASE 1: Obtención de los Datos
 
@@ -91,7 +90,7 @@ app.layout = html.Div([
 
                     ],style={'display': 'flex', 'flex-direction': 'column'})
 
-"""@app.callback(
+@app.callback(
     Output('store-data','data'),
     Input("start", "value"),
     Input("end", "value"),
@@ -110,11 +109,11 @@ def update_value(cur, ly, input_data):
     print(Data.describe())
     print(Data[Data.duplicated(keep='first')])
 
-    return Data.to_dict('records')"""
+    return Data.to_dict('records')
 
 
 @app.callback(
-    Output('output-graph', 'figure'),
+    Output('output-graph', 'children'),
     Output('Estado Final', 'children'),
     Input('IndSelect','value'),
     Input('store-data','data'),
@@ -123,13 +122,94 @@ def update_value(cur, ly, input_data):
 
 def IndPlot(Select, data, input_data):
 
-    #df=pd.DataFrame(data)
+    df=pd.DataFrame(data)
+    print(Select)
+    print(df.info())
 
-    fig = go.Figure(
-    data=go.Bar(y=[2, 3, 1], # replace with your own data source
-                marker_color='Gold'))
+    if pd.isnull(Select):
+    
+        return [html.Div(
+            [dcc.Graph(
+            id='example-graph',
+            figure=
+            {
+                'data': 
+                [
+                    {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data}
+                    
+                ],
+                'layout': 
+                {
+                    'title': "Cierre para "+input_data
+                }
+            }
+                    )
+                    ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
+   
+    elif len(Select)==0:
 
-    return fig
+        return [html.Div(
+            [dcc.Graph(
+            id='example-graph',
+            figure=
+            {
+                'data': 
+                [
+                    {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data}
+                    
+                ],
+                'layout': 
+                {
+                    'title': "Cierre para "+input_data
+                }
+            }
+                    )
+                    ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
+
+    elif "Bollinger" in Select:
+
+        return [html.Div(
+            [dcc.Graph(
+            id='example-graph',
+            figure=
+            {
+                'data': 
+                [
+                    {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df["upper_band"], 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df["middle_band"], 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df["lower_band"], 'type': 'line', 'name': input_data}
+                ],
+                'layout': 
+                {
+                    'title': "Cierre para "+input_data
+                }
+            }
+                    )
+                    ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
+
+    
+    else:
+    
+        return [html.Div(
+            [dcc.Graph(
+            id='example-graph',
+            figure=
+            {
+                'data': 
+                [
+                    {'x': df.index, 'y': df.Close, 'type': 'line', 'name': input_data},
+                    {'x': df.index, 'y': df[Select[0]], 'type': 'line', 'name': input_data}
+                ],
+                'layout': 
+                {
+                    'title': "Cierre para "+input_data
+                }
+            }
+                    )
+                    ]),"Datos análizados"]  #Puedo regresar otro html que diga la decisión
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
