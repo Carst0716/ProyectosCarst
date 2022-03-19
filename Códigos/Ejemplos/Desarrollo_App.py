@@ -1,12 +1,7 @@
 from multiprocessing import Value
-from turtle import color
-from matplotlib import legend
-from matplotlib.legend import Legend
+from tkinter.tix import Select
 import talib as ta
-import matplotlib.pyplot as plt
-import yfinance as yf
 import pandas as pd
-import numpy as np
 import pandas_datareader.data as web
 import datetime
 import dash
@@ -61,6 +56,8 @@ colors={
     'titles':'White'
 }
 
+#Layout de la App
+
 app.layout = html.Div([
     html.Div(
         children=[
@@ -74,9 +71,6 @@ app.layout = html.Div([
         dcc.Input(id='start', value=ly, type='text', style={'marginRight':'10px'}),
         html.H3("Fecha Final"),
         dcc.Input(id='end', value=cur, type='text', style={'marginRight':'10px'}),
-
-        html.H3(id="EstadoIni"),
-        html.H3(id="EstadoFin"),
 
         html.H3("Escoja un Indicador de Tendencia"),
         dcc.Checklist(id="IndSelectTen",
@@ -111,24 +105,27 @@ app.layout = html.Div([
             dcc.Graph(id='ind-tendencias'),
             dcc.Graph(id='ind-oscilatorios'),
             ],
-            
-            style={'display': 'flex', 'flex-direction': 'column'}
         ),
         
-        html.Div(id='Estado Final')
+        html.Div(id='Estado Final'),
+        html.H3(id="EstadoIni"),
+        html.H3(id="EstadoFin")
 
                 ]
     ,style={'padding': 10, 'flex': 1})
 
                     ])
 
+#Estado Inicial
+
 @app.callback(
     Output('EstadoIni','children'),
     Input('input','value')
 )
-
 def Estado(input_value):
     return "Estado: Descargando "+input_value
+
+#Descarga
 
 @app.callback(
     Output('store-data','data'),
@@ -136,7 +133,6 @@ def Estado(input_value):
     Input("end", "value"),
     Input('input', 'value')
 )
-
 def update_value(cur, ly, input_data):
 
     df=obtencionDatos(input_data,'yahoo',cur,ly)
@@ -154,6 +150,8 @@ def update_value(cur, ly, input_data):
 
     return Data.to_dict('records')
 
+#Graficos de Tendencias
+
 @app.callback(
     Output('ind-tendencias', 'figure'),
     Output('EstadoFin','children'),
@@ -161,7 +159,6 @@ def update_value(cur, ly, input_data):
     Input('store-data','data'),
     Input('input','value')
 )
-
 def PlotTen(SelectTen, data, input_data):
 
     df=pd.DataFrame(data)
@@ -177,7 +174,13 @@ def PlotTen(SelectTen, data, input_data):
                     ))
 
         fig.update_layout(
-        title="Cierre para "+input_data)
+        title={
+                'text': "Cierre para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                })
 
     elif len(SelectTen)==0:
 
@@ -188,42 +191,53 @@ def PlotTen(SelectTen, data, input_data):
                     marker_color='Gold'
                     ))
         fig.update_layout(
-        title="Cierre para "+input_data)
+        title={
+                'text': "Cierre para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                })
+        
 
     elif "Bollinger" in SelectTen:
 
         fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df.Close,
-                    marker_color='Gold'
-                    ))
-
-        fig.add_trace(
-            go.Scatter(
-                    x=df.index,
                     y=df["upper_band"],
-                    marker_color='Blue'
-                    ))
-
-        fig.add_trace(
-            go.Scatter(
-                    x=df.index,
-                    y=df["middle_band"],
-                    marker_color='Blue'
+                    marker_color='#F23E08',
+                    fill=None
                     ))
 
         fig.add_trace(
             go.Scatter(
                     x=df.index,
                     y=df["lower_band"],
-                    marker_color='Blue'
+                    marker_color='#F23E08',
+                    fill='tonexty'
                     ))
 
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df.Close,
+                marker_color='Gold'))
+
         fig.update_layout(
-        title="Bandas de Bollinguer para "+input_data)
+        title={
+                'text': "Bandas de Bollinguer para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                })
 
     else:
+
+        print(len(SelectTen))
+
+        for i in range(0,len(SelectTen)):
 
          fig.add_trace(
             go.Scatter(
@@ -235,12 +249,19 @@ def PlotTen(SelectTen, data, input_data):
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectTen[0]],
+                    y=df[SelectTen[i]],
                     
                     marker_color='#F73F06'
                     ))
          fig.update_layout(
-            title=SelectTen[0]+" para "+input_data)
+            title={
+                'text': SelectTen[i]+" para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                }
+         )
 
     fig.update_layout(
 
@@ -266,13 +287,14 @@ def PlotTen(SelectTen, data, input_data):
 
     return [fig,"Estado: Datos descargados"]
 
+#Graficos Oscilatorios
+
 @app.callback(
     Output('ind-oscilatorios', 'figure'),
     Input('IndSelectOsc','value'),
     Input('store-data','data'),
     Input('input','value')
 )
-
 def PlotOsc(SelectOsc, data, input_data):
     
     df=pd.DataFrame(data)
@@ -284,10 +306,17 @@ def PlotOsc(SelectOsc, data, input_data):
             go.Scatter(
                     x=df.index,
                     y=df[SelectOsc[0]],
-                    marker_color='Gold'       
+                    marker_color='Gold',
+                    fill='tonexty'      
                     ))
          fig.update_layout(
-         title=SelectOsc[0]+" para "+input_data,
+         title={
+                'text': SelectOsc[0]+" para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                },
          yaxis_title=SelectOsc[0]+" del Activo")
 
     fig.update_layout(
