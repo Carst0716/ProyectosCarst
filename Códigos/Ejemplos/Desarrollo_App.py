@@ -99,7 +99,8 @@ app.layout = html.Div([
             options={
                 "SMA 30":"SMA 30",
                 "SMA 100":"SMA 100",
-                "Bollinger":"Bollinger"
+                "Bollinger":"Bollinger",
+                "SMA30_SMA100":"SMA 30--SMA 100"
                 }, 
                 labelStyle=
                 {
@@ -255,11 +256,7 @@ def PlotTen(SelectTen, data, input_data):
                 'yanchor': 'top' # new
                 })
 
-    else:
-
-        print(len(SelectTen))
-
-        for i in range(0,len(SelectTen)):
+    elif "SMA30_SMA100" in SelectTen:
 
          fig.add_trace(
             go.Scatter(
@@ -271,13 +268,48 @@ def PlotTen(SelectTen, data, input_data):
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectTen[i]],
+                    y=df["SMA 30"],
                     
-                    marker_color='#01CD9A'
+                    marker_color='#F23E08'
+                    ))
+
+         fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df["SMA 100"],
+                    
+                    marker_color='#F23E08'
+                    ))
+
+
+         fig.update_layout(
+            title={
+                'text': SelectTen[0]+" para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                }
+         )
+    else:
+
+         fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df.Close,
+                    marker_color='Gold'
+                    ))
+
+         fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df[SelectTen[0]],
+                    
+                    marker_color='#F23E08'
                     ))
          fig.update_layout(
             title={
-                'text': SelectTen[i]+" para "+input_data,
+                'text': SelectTen[0]+" para "+input_data,
                 'y':0.9, # new
                 'x':0.5,
                 'xanchor': 'center',
