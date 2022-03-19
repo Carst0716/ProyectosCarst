@@ -1,31 +1,20 @@
-from dash import Dash, dcc, html, Input, Output
-import plotly.graph_objects as go
+from tkinter.tix import Select
+import pandas as pd
+import numpy as np
 
-app = Dash(__name__)
+SelectTen=None
 
+print(len(SelectTen))
 
-app.layout = html.Div([
-    html.H4('Interactive color selection with simple Dash example'),
-    html.P("Select color:"),
-    dcc.Dropdown(
-        id="dropdown",
-        options=['Gold', 'MediumTurquoise', 'LightGreen'],
-        value='Gold',
-        clearable=False,
-    ),
-    dcc.Graph(id="graph"),
-])
-
-
-@app.callback(
-    Output("graph", "figure"), 
-    Input("dropdown", "value"))
+if len(SelectTen)==0:
     
-def display_color(color):
-    fig = go.Figure(
-        data=go.Bar(y=[2, 3, 1], # replace with your own data source
-                    marker_color=color))
-    return fig
+    if np.any(SelectTen):
+        print("Si")
+    else:
+        print("No")
+else:
 
-
-app.run_server(debug=True)
+    if pd.isnull(SelectTen[0]):
+        print("Si")
+    else:
+        print("No")

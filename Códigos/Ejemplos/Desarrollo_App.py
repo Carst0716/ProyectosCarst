@@ -56,6 +56,28 @@ colors={
     'titles':'White'
 }
 
+fig=go.Figure()
+
+fig.update_layout(
+
+        showlegend=False,
+        paper_bgcolor=colors['background'],
+        plot_bgcolor=colors['background'],
+        font_color=colors['titles'])
+
+fig.update_xaxes(
+        showline=True,
+        linewidth=2,
+        linecolor='#8B8E95',
+        gridcolor='#8B8E95')
+    
+fig.update_yaxes(
+        showline=True,
+        linewidth=2,
+        linecolor='#8B8E95',
+        gridcolor='#8B8E95')
+
+
 #Layout de la App
 
 app.layout = html.Div([
@@ -102,8 +124,8 @@ app.layout = html.Div([
 
         html.Div(
             [
-            dcc.Graph(id='ind-tendencias'),
-            dcc.Graph(id='ind-oscilatorios'),
+            dcc.Graph(id='ind-tendencias',figure=fig),
+            dcc.Graph(id='ind-oscilatorios',figure=fig),
             ],
         ),
         
@@ -251,7 +273,7 @@ def PlotTen(SelectTen, data, input_data):
                     x=df.index,
                     y=df[SelectTen[i]],
                     
-                    marker_color='#F73F06'
+                    marker_color='#01CD9A'
                     ))
          fig.update_layout(
             title={
@@ -302,6 +324,7 @@ def PlotOsc(SelectOsc, data, input_data):
     
     if not pd.isnull(SelectOsc) and not len(SelectOsc)==0:
 
+        if SelectOsc[0]=="ADX":
          fig.add_trace(
             go.Scatter(
                     x=df.index,
@@ -309,6 +332,16 @@ def PlotOsc(SelectOsc, data, input_data):
                     marker_color='Gold',
                     fill='tonexty'      
                     ))
+
+        elif SelectOsc[0]=="RSI":
+         fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df[SelectOsc[0]],
+                    marker_color='Gold',
+                    fill=None      
+                    ))
+
          fig.update_layout(
          title={
                 'text': SelectOsc[0]+" para "+input_data,
