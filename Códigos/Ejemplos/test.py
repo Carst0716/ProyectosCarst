@@ -90,9 +90,6 @@ data["Venta"]=Sen[1]
 plt.style.use('bmh')
 
 plt.figure(figsize=(10,5))
-plt.plot(data['BTC-USD'],label="BTC-USD",alpha=0.4)
-plt.plot(data['MVS30'],label="MVS30",alpha=0.3)
-plt.plot(data['MVS100'],label="MVS100",alpha=0.3)
 plt.scatter(data.index,data['Compra'],label="Precio de compra",marker='^',color='green')
 plt.scatter(data.index,data['Venta'],label="Precio de venta",marker='^',color='red')
 plt.legend(loc="upper left")

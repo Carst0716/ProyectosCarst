@@ -1,5 +1,7 @@
 from multiprocessing import Value
+from statistics import mode
 from tkinter.tix import Select
+from matplotlib.pyplot import text
 import talib as ta
 import pandas as pd
 import pandas_datareader.data as web
@@ -46,7 +48,7 @@ def Indicadores(Data):
 current = datetime.datetime.now()
 cur=str(current.year)+"-"+str(current.month)+"-"+str(current.day)
 
-LastYear=current-datetime.timedelta(days=365*3)
+LastYear=current-datetime.timedelta(days=365*5)
 ly=str(LastYear.year)+"-"+str(LastYear.month)+"-"+str(LastYear.day)
 
 app = dash.Dash(__name__)
@@ -61,8 +63,6 @@ def signal(data):
     compra=[]
     venta=[]
     condicion=0
-
-    print(len(data))
 
     for dia in range(len(data)):
         
@@ -129,16 +129,17 @@ app.layout = html.Div([
         html.H3("Escoja un Indicador de Tendencia"),
         dcc.Dropdown(id="IndSelectTen",
             options={
+                "Divisa":"Divisa",
                 "SMA 30":"SMA 30",
                 "SMA 100":"SMA 100",
                 "Bollinger":"Bollinger",
                 "SMA30_SMA100":"SMA 30 vs SMA 100"
                 },
-                value="SMA 30",
+                value="Divisa",
                 searchable=False
         ),
 
-        html.H3("Otras Opciones"),
+        html.H3("Señales"),
         dcc.Checklist(id="OtrasOpc",
             options={
                 "CV":"Compra / Venta"
@@ -236,11 +237,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
                 'yanchor': 'top' # new
                 })
 
-    if pd.isnull(Opc):
-        print("Está en Null")
-    elif len(Opc)==0:
-        print("Está en 0")
-    else:
+    if not pd.isnull(Opc) and not len(Opc)==0:
 
         Sen=signal(df)
         df["Compra"]=Sen[0]
@@ -248,56 +245,29 @@ def PlotTen(SelectTen, data, input_data, Opc):
 
         fig.add_trace(
             go.Scatter(
-                    x=df.index,
-                    y=df.Close,
-                    marker_color='Gold'
-                    ))
-
-        fig.add_trace(
-            go.Scatter(
-                    x=df.index,
-                    y=df["SMA 30"],
-                    
-                    marker_color='#F23E08'
-                    ))
-
-        fig.add_trace(
-            go.Scatter(
-                    x=df.index,
-                    y=df["SMA 100"],
-                    
-                    marker_color='#F23E08'
-                    ))
-
-        fig.add_trace(
-            go.Scatter(
+                    mode="markers",
                     x=df.index,
                     y=df['Compra'],
-                    
                     marker=dict(
-                    color='LightSkyBlue',
-                    size=20,
-                    line=dict(
-                    color='MediumPurple',
-                    width=2
+            symbol='triangle-up',
+            color='#01CD9A',
+            size=20
             )
         )
-                    ))
+                    )
 
         fig.add_trace(
             go.Scatter(
+                    mode="markers",
                     x=df.index,
                     y=df['Venta'],
-                    
                     marker=dict(
-                    color='LightSkyBlue',
-                    size=20,
-                    line=dict(
-                    color='MediumPurple',
-                    width=2
+            symbol='triangle-down',
+            color='Red',
+            size=20
             )
         )
-                    ))
+                    )
 
         fig.update_layout(
             title={
@@ -306,9 +276,8 @@ def PlotTen(SelectTen, data, input_data, Opc):
                 'x':0.5,
                 'xanchor': 'center',
                 'yanchor': 'top' # new
-                }
+                }, xaxis_range=[0,max(df.index)]
          )
-
 
     if SelectTen=="Bollinger":
 
@@ -316,7 +285,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["upper_band"],
-                    marker_color='#F23E08',
+                    marker_color='#5E7C90',
                     fill=None
                     ))
 
@@ -324,7 +293,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["lower_band"],
-                    marker_color='#F23E08',
+                    marker_color='#5E7C90',
                     fill='tonexty'
                     ))
 
@@ -378,6 +347,26 @@ def PlotTen(SelectTen, data, input_data, Opc):
                 'yanchor': 'top' # new
                 }
          )
+    
+    elif SelectTen=="Divisa":
+
+        fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df.Close,
+                    marker_color='Gold'
+                    ))
+
+        fig.update_layout(
+            title={
+                'text': SelectTen+" para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                }
+         )
+
     else:
 
          fig.add_trace(
@@ -429,8 +418,6 @@ def PlotTen(SelectTen, data, input_data, Opc):
 
     return [fig,"Estado: Datos descargados"]
 
-
-
 #Graficos Oscilatorios
 
 @app.callback(
@@ -453,6 +440,70 @@ def PlotOsc(SelectOsc, data, input_data):
                     fill='tonexty'      
                     ))
 
+         x0 = df.index[0]       
+         x1 = df.index[-1] 
+         fig.add_shape(type="line",
+            x0=x0, y0=25, x1=x1, y1=25,
+            line=dict(color="#F23E08",width=2),
+        )
+
+         x0 = df.index[0]       
+         x1 = df.index[-1] 
+         fig.add_shape(type="line",
+            x0=x0, y0=50, x1=x1, y1=50,
+            line=dict(color="#0DC1F7",width=2),
+        )
+
+        
+         x0 = df.index[0]       
+         x1 = df.index[-1] 
+         fig.add_shape(type="line",
+            x0=x0, y0=75, x1=x1, y1=75,
+            line=dict(color="#3EF208",width=2)
+        )
+
+         fig.add_annotation(x=max(df.index)/4, y=75-7,
+            text="MUY FUERTE",
+            font=dict(
+            family="Courier New, monospace",
+            size=16,
+            color="#FFFFFF"),
+            showarrow=True,
+            arrowhead=1,
+            bordercolor="#2E3442",
+            borderwidth=5,
+            borderpad=4,
+            bgcolor="#3EF208",
+            opacity=0.8)
+
+         fig.add_annotation(x=max(df.index)/4, y=50-7,
+            text="FUERTE",
+            font=dict(
+            family="Courier New, monospace",
+            size=16,
+            color="#FFFFFF"),
+            showarrow=True,
+            arrowhead=1,
+            bordercolor="#2E3442",
+            borderwidth=5,
+            borderpad=4,
+            bgcolor="#0DC1F7",
+            opacity=0.8)
+
+         fig.add_annotation(x=max(df.index)/4, y=25-7,
+            text="AUSENCIA",
+            font=dict(
+            family="Courier New, monospace",
+            size=16,
+            color="#FFFFFF"),
+            showarrow=True,
+            arrowhead=1,
+            bordercolor="#2E3442",
+            borderwidth=5,
+            borderpad=4,
+            bgcolor="#F23E08",
+            opacity=0.8)
+
     elif SelectOsc=="RSI":
          fig.add_trace(
             go.Scatter(
@@ -462,6 +513,48 @@ def PlotOsc(SelectOsc, data, input_data):
                     fill=None      
                     ))
 
+         x0 = df.index[0]       
+         x1 = df.index[-1] 
+         fig.add_shape(type="line",
+            x0=x0, y0=30, x1=x1, y1=30,
+            line=dict(color="#F23E08",width=2),
+        )
+
+         x0 = df.index[0]       
+         x1 = df.index[-1] 
+         fig.add_shape(type="line",
+            x0=x0, y0=70, x1=x1, y1=70,
+            line=dict(color="#3EF208",width=2),
+        )
+
+         fig.add_annotation(x=max(df.index)/4, y=70-7,
+            text="SOBRECOMPRA",
+            font=dict(
+            family="Courier New, monospace",
+            size=16,
+            color="#FFFFFF"),
+            showarrow=True,
+            arrowhead=1,
+            bordercolor="#2E3442",
+            borderwidth=5,
+            borderpad=4,
+            bgcolor="#3EF208",
+            opacity=0.8)
+
+         fig.add_annotation(x=max(df.index)/4, y=30-15,
+            text="SOBREVENTA",
+            font=dict(
+            family="Courier New, monospace",
+            size=16,
+            color="#FFFFFF"),
+            showarrow=True,
+            arrowhead=1,
+            bordercolor="#2E3442",
+            borderwidth=5,
+            borderpad=4,
+            bgcolor="#F23E08",
+            opacity=0.8)
+
     fig.update_layout(
          title={
                 'text': SelectOsc+" para "+input_data,
@@ -470,7 +563,8 @@ def PlotOsc(SelectOsc, data, input_data):
                 'xanchor': 'center',
                 'yanchor': 'top' # new
                 },
-         yaxis_title=SelectOsc+" del Activo")
+         yaxis_title=SelectOsc+" del Activo",
+         yaxis_range=[0,100])
 
     fig.update_layout(
 
