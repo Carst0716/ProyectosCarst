@@ -13,6 +13,10 @@ from dash import html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 
+
+#DASH: 75%
+
+
 #FASE 1: Obtención de los Datos
 
 def obtencionDatos(input_data,motor,cur,ly):
@@ -54,7 +58,7 @@ ly=str(LastYear.year)+"-"+str(LastYear.month)+"-"+str(LastYear.day)
 app = dash.Dash(__name__)
 
 colors={
-    'background':'#2E3442',
+    'background':'#282D39',
     'text':'#D0CFCF',
     'titles':'White'
 }
@@ -133,7 +137,7 @@ app.layout = html.Div([
                 "SMA 30":"SMA 30",
                 "SMA 100":"SMA 100",
                 "Bollinger":"Bollinger",
-                "SMA30_SMA100":"SMA 30 vs SMA 100"
+                "SMA30 vs SMA100":"SMA 30 vs SMA 100"
                 },
                 value="Divisa",
                 searchable=False
@@ -152,7 +156,7 @@ app.layout = html.Div([
                 "ADX":"ADX",
                 "RSI":"RSI"
                 }, 
-            value="ADX",
+            value="RSI",
             searchable=False
         ),
 
@@ -165,7 +169,9 @@ app.layout = html.Div([
         
         html.Div(id='Estado Final'),
         html.H3(id="EstadoIni"),
-        html.H3(id="EstadoFin")
+        html.H3(id="EstadoFin"),
+        
+        html.Div(id="Recomendacion",className="RecCompra")
 
                 ]
     ,style={'padding': 10, 'flex': 1})
@@ -210,6 +216,8 @@ def update_value(cur, ly, input_data):
 @app.callback(
     Output('ind-tendencias', 'figure'),
     Output('EstadoFin','children'),
+    Output('Recomendacion','children'),
+    Output('Recomendacion','style'),
     Input('IndSelectTen','value'),
     Input('store-data','data'),
     Input('input','value'),
@@ -312,7 +320,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
                 'yanchor': 'top' # new
                 })
 
-    elif SelectTen=="SMA30_SMA100":
+    elif SelectTen=="SMA30 vs SMA100":
 
          fig.add_trace(
             go.Scatter(
@@ -416,7 +424,17 @@ def PlotTen(SelectTen, data, input_data, Opc):
         linecolor='#8B8E95',
         gridcolor='#8B8E95')
 
-    return [fig,"Estado: Datos descargados"]
+    colors_Rec={
+        'Comprar':'#F64005',
+        'Vender':'#5df605'}
+
+#TOMAR LA DECISIÓN...
+
+    return [fig,
+        "Estado: Datos descargados",
+        "VENDER",
+        {'background-color': colors_Rec['Vender']}]
+
 
 #Graficos Oscilatorios
 
@@ -541,7 +559,7 @@ def PlotOsc(SelectOsc, data, input_data):
             bgcolor="#3EF208",
             opacity=0.8)
 
-         fig.add_annotation(x=max(df.index)/4, y=30-15,
+         fig.add_annotation(x=max(df.index)/4, y=30-14,
             text="SOBREVENTA",
             font=dict(
             family="Courier New, monospace",
