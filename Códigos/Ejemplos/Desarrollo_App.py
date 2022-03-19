@@ -3,6 +3,7 @@ from tkinter.tix import Select
 import talib as ta
 import pandas as pd
 import pandas_datareader.data as web
+import numpy as np
 import datetime
 import dash
 from dash import dcc
@@ -56,6 +57,37 @@ colors={
     'titles':'White'
 }
 
+def signal(data):
+    compra=[]
+    venta=[]
+    condicion=0
+
+    print(len(data))
+
+    for dia in range(len(data)):
+        
+        if data["SMA 30"][dia]>data["SMA 100"][dia]:
+            if condicion!=1:
+                compra.append(data.Close[dia])
+                venta.append(np.nan)
+                condicion=1
+            else:
+                compra.append(np.nan)
+                venta.append(np.nan)
+        elif data["SMA 30"][dia]<data.Close[dia]:
+            if condicion!=-1:
+                venta.append(data.Close[dia])
+                compra.append(np.nan)
+                condicion=-1
+            else:
+                compra.append(np.nan)
+                venta.append(np.nan)
+        else:
+             compra.append(np.nan)
+             venta.append(np.nan)
+
+    return (compra,venta)
+
 fig=go.Figure()
 
 fig.update_layout(
@@ -95,32 +127,32 @@ app.layout = html.Div([
         dcc.Input(id='end', value=cur, type='text', style={'marginRight':'10px'}),
 
         html.H3("Escoja un Indicador de Tendencia"),
-        dcc.Checklist(id="IndSelectTen",
+        dcc.Dropdown(id="IndSelectTen",
             options={
                 "SMA 30":"SMA 30",
                 "SMA 100":"SMA 100",
                 "Bollinger":"Bollinger",
-                "SMA30_SMA100":"SMA 30--SMA 100"
-                }, 
-                labelStyle=
-                {
-                    'display': 'inline-block',
-                    'color': colors['text'],
-                }
+                "SMA30_SMA100":"SMA 30 vs SMA 100"
+                },
+                value="SMA 30",
+                searchable=False
         ),
+
+        html.H3("Otras Opciones"),
+        dcc.Checklist(id="OtrasOpc",
+            options={
+                "CV":"Compra / Venta"
+            },
+            labelStyle={'color':colors['text']}),
         
         html.H3("Escoja un Indicador Oscilatorio"),
-        dcc.Checklist(id="IndSelectOsc",
+        dcc.Dropdown(id="IndSelectOsc",
             options={
                 "ADX":"ADX",
                 "RSI":"RSI"
                 }, 
-                labelStyle=
-                {
-                    'display': 'inline-block',
-                    'color': colors['text'],
-                },
-            value=["ADX"]
+            value="ADX",
+            searchable=False
         ),
 
         html.Div(
@@ -162,10 +194,9 @@ def update_value(cur, ly, input_data):
     Data=Indicadores(df)
 
     #FASE 2: Refinación de los datos
-    
-    print(Data.info())
 
     """
+    print(Data.info())
     print(Data.head())
     print(Data.describe())
     print(Data[Data.duplicated(keep='first')])
@@ -180,23 +211,23 @@ def update_value(cur, ly, input_data):
     Output('EstadoFin','children'),
     Input('IndSelectTen','value'),
     Input('store-data','data'),
-    Input('input','value')
+    Input('input','value'),
+    Input('OtrasOpc','value')
 )
-def PlotTen(SelectTen, data, input_data):
+
+def PlotTen(SelectTen, data, input_data, Opc):
 
     df=pd.DataFrame(data)
     fig = go.Figure()
-    
-    if pd.isnull(SelectTen):
 
-        fig.add_trace(
+    fig.add_trace(
             go.Scatter(
                     x=df.index,
                     y=df.Close,
                     marker_color='Gold'
                     ))
 
-        fig.update_layout(
+    fig.update_layout(
         title={
                 'text': "Cierre para "+input_data,
                 'y':0.9, # new
@@ -205,7 +236,15 @@ def PlotTen(SelectTen, data, input_data):
                 'yanchor': 'top' # new
                 })
 
-    elif len(SelectTen)==0:
+    if pd.isnull(Opc):
+        print("Está en Null")
+    elif len(Opc)==0:
+        print("Está en 0")
+    else:
+
+        Sen=signal(df)
+        df["Compra"]=Sen[0]
+        df["Venta"]=Sen[1]
 
         fig.add_trace(
             go.Scatter(
@@ -213,17 +252,65 @@ def PlotTen(SelectTen, data, input_data):
                     y=df.Close,
                     marker_color='Gold'
                     ))
+
+        fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df["SMA 30"],
+                    
+                    marker_color='#F23E08'
+                    ))
+
+        fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df["SMA 100"],
+                    
+                    marker_color='#F23E08'
+                    ))
+
+        fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df['Compra'],
+                    
+                    marker=dict(
+                    color='LightSkyBlue',
+                    size=20,
+                    line=dict(
+                    color='MediumPurple',
+                    width=2
+            )
+        )
+                    ))
+
+        fig.add_trace(
+            go.Scatter(
+                    x=df.index,
+                    y=df['Venta'],
+                    
+                    marker=dict(
+                    color='LightSkyBlue',
+                    size=20,
+                    line=dict(
+                    color='MediumPurple',
+                    width=2
+            )
+        )
+                    ))
+
         fig.update_layout(
-        title={
-                'text': "Cierre para "+input_data,
+            title={
+                'text': SelectTen+" para "+input_data,
                 'y':0.9, # new
                 'x':0.5,
                 'xanchor': 'center',
                 'yanchor': 'top' # new
-                })
-        
+                }
+         )
 
-    elif "Bollinger" in SelectTen:
+
+    if SelectTen=="Bollinger":
 
         fig.add_trace(
             go.Scatter(
@@ -256,7 +343,7 @@ def PlotTen(SelectTen, data, input_data):
                 'yanchor': 'top' # new
                 })
 
-    elif "SMA30_SMA100" in SelectTen:
+    elif SelectTen=="SMA30_SMA100":
 
          fig.add_trace(
             go.Scatter(
@@ -284,7 +371,7 @@ def PlotTen(SelectTen, data, input_data):
 
          fig.update_layout(
             title={
-                'text': SelectTen[0]+" para "+input_data,
+                'text': SelectTen+" para "+input_data,
                 'y':0.9, # new
                 'x':0.5,
                 'xanchor': 'center',
@@ -303,13 +390,14 @@ def PlotTen(SelectTen, data, input_data):
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectTen[0]],
+                    y=df[SelectTen],
                     
                     marker_color='#F23E08'
                     ))
+
          fig.update_layout(
             title={
-                'text': SelectTen[0]+" para "+input_data,
+                'text': SelectTen+" para "+input_data,
                 'y':0.9, # new
                 'x':0.5,
                 'xanchor': 'center',
@@ -341,6 +429,8 @@ def PlotTen(SelectTen, data, input_data):
 
     return [fig,"Estado: Datos descargados"]
 
+
+
 #Graficos Oscilatorios
 
 @app.callback(
@@ -353,36 +443,34 @@ def PlotOsc(SelectOsc, data, input_data):
     
     df=pd.DataFrame(data)
     fig = go.Figure()
-    
-    if not pd.isnull(SelectOsc) and not len(SelectOsc)==0:
 
-        if SelectOsc[0]=="ADX":
+    if SelectOsc=="ADX":
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectOsc[0]],
+                    y=df[SelectOsc],
                     marker_color='Gold',
                     fill='tonexty'      
                     ))
 
-        elif SelectOsc[0]=="RSI":
+    elif SelectOsc=="RSI":
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectOsc[0]],
+                    y=df[SelectOsc],
                     marker_color='Gold',
                     fill=None      
                     ))
 
-         fig.update_layout(
+    fig.update_layout(
          title={
-                'text': SelectOsc[0]+" para "+input_data,
+                'text': SelectOsc+" para "+input_data,
                 'y':0.9, # new
                 'x':0.5,
                 'xanchor': 'center',
                 'yanchor': 'top' # new
                 },
-         yaxis_title=SelectOsc[0]+" del Activo")
+         yaxis_title=SelectOsc+" del Activo")
 
     fig.update_layout(
 
@@ -406,7 +494,6 @@ def PlotOsc(SelectOsc, data, input_data):
         gridcolor='#8B8E95')
 
     return fig
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -1,20 +1,33 @@
-from tkinter.tix import Select
-import pandas as pd
-import numpy as np
+import dash
+from dash import dcc
+from dash import html
+from dash.dependencies import Input, Output
 
-SelectTen=None
+app = dash.Dash(__name__)
 
-print(len(SelectTen))
+app.layout = html.Div(
+    [
+        dcc.Checklist(
+            id="checklist",
+            options=[
+                {"label": "New York City", "value": "NYC"},
+                {"label": "Montréal", "value": "MTL"},
+                {"label": "San Francisco", "value": "SF"},
+            ],
+            labelStyle={"display": "block"},
+            value=[],
+        ),
+        html.Button("load", id="load-button", n_clicks=0),
+    ]
+)
 
-if len(SelectTen)==0:
-    
-    if np.any(SelectTen):
-        print("Si")
-    else:
-        print("No")
-else:
 
-    if pd.isnull(SelectTen[0]):
-        print("Si")
-    else:
-        print("No")
+@app.callback(Output("checklist", "value"), Input("load-button", "n_clicks"))
+def change_values(n_clicks):
+    return ["SF"] if n_clicks > 0 else []
+
+
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
