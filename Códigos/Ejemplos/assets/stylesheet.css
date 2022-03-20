@@ -31,12 +31,61 @@ h1, h2, h3, h4, h5, h6 {
 {
     background-color: #F64005;
     color: #FFFFFF;
-    width: 120px;
+    width: 500px;
     height: 30px;
     font-size: 20px;
     text-align: center;
     font-weight: bold;
     padding-top: 10px;
     border-radius: 10px;
-    border: 1px solid #D0CFCF;
+    border: 1px solid #D0CFCF
+}
+
+.Tendencia
+{
+    background-color: #6b0aa3;
+    color: #FFFFFF;
+    width: 140px;
+    height: 30px;
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #D0CFCF
+}
+
+.ADX
+{
+    background-color: #F64005;
+    color: #FFFFFF;
+    width: 140px;
+    height: 30px;
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #D0CFCF
+}
+
+.RSI
+{
+    background-color: #F64005;
+    color: #FFFFFF;
+    width: 140px;
+    height: 30px;
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #D0CFCF
+}
+
+.RecDIV
+{
+    display: inline-block;
+    width: 25%;
+    margin: 10
 }

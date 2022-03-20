@@ -14,8 +14,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 
 
-#DASH: 75%
-
+#DASH: 85%
 
 #FASE 1: Obtención de los Datos
 
@@ -171,8 +170,12 @@ app.layout = html.Div([
         html.H3(id="EstadoIni"),
         html.H3(id="EstadoFin"),
         
+        html.Div([
+        html.Div(id="AporteADX",className="ADX"),
+        html.Div(id="AporteRSI",className="RSI"),
+        html.Div(id="Tendencia",className="Tendencia"),
         html.Div(id="Recomendacion",className="RecCompra")
-
+        ],className="RecDIV")
                 ]
     ,style={'padding': 10, 'flex': 1})
 
@@ -218,6 +221,9 @@ def update_value(cur, ly, input_data):
     Output('EstadoFin','children'),
     Output('Recomendacion','children'),
     Output('Recomendacion','style'),
+    Output('AporteADX','children'),
+    Output('AporteRSI','children'),
+    Output('Tendencia','children'),
     Input('IndSelectTen','value'),
     Input('store-data','data'),
     Input('input','value'),
@@ -293,7 +299,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["upper_band"],
-                    marker_color='#5E7C90',
+                    marker_color='#124702',
                     fill=None
                     ))
 
@@ -301,7 +307,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["lower_band"],
-                    marker_color='#5E7C90',
+                    marker_color='#124702',
                     fill='tonexty'
                     ))
 
@@ -344,7 +350,6 @@ def PlotTen(SelectTen, data, input_data, Opc):
                     
                     marker_color='#F23E08'
                     ))
-
 
          fig.update_layout(
             title={
@@ -425,16 +430,98 @@ def PlotTen(SelectTen, data, input_data, Opc):
         gridcolor='#8B8E95')
 
     colors_Rec={
-        'Comprar':'#F64005',
-        'Vender':'#5df605'}
+        'Moderada':'#FFCC00',
+        'SobreCompra':'#9ACD32',
+        'SobreVenta':'#F64005',
+        'NoDefinido':'#00197F'}
 
 #TOMAR LA DECISIÓN...
 
+
+    #Pesos por Indicador
+
+    RsiF=list(df["RSI"])[-1]
+    ADxF=list(df["ADX"])[-1]
+    
+    if 30<=RsiF<=70: #[30 70]
+        if 0<=ADxF<=25: #[0 25]
+            Dec="Estable con Volatilidad Moderada"
+            ColorDec=colors_Rec['Moderada']
+            Ten="Estable"
+        
+        elif 25<ADxF<=50: #[25 50]
+            Dec="Fuerte con Volatilidad Moderada"
+            ColorDec=colors_Rec['Moderada']
+            Ten="Estable"
+        
+        elif 50<ADxF<=75: #[50 75]
+            Dec="Muy Fuerte con Volatilidad Moderada"
+            ColorDec=colors_Rec['Moderada']
+            Ten="Estable"
+        
+        elif 75<ADxF<=100: #[75 100]
+            Dec="Extremadamente Fuerte con Volatilidad Moderada"
+            ColorDec=colors_Rec['Moderada']
+            Ten="Estable"
+
+        else:
+            Dec="No Definido"
+            ColorDec=colors_Rec['NoDefinido']
+            Ten="Estable"
+    
+    elif RsiF<30:
+        if 0<=ADxF<=25: #[0 25]
+            Dec="Estable y en Sobreventa"
+            ColorDec=colors_Rec['SobreVenta']
+            Ten="Alcista"
+        
+        elif 25<ADxF<=50: #[25 50]
+            Dec="Fuerte y en Sobreventa"
+            ColorDec=colors_Rec['SobreVenta']
+            Ten="Alcista"
+        
+        elif 50<ADxF<=75: #[50 75]
+            Dec="Muy Fuerte y en Sobreventa"
+            ColorDec=colors_Rec['SobreVenta']
+            Ten="Alcista"
+        
+        elif 75<ADxF<=100: #[75 100]
+            Dec="Extremadamente Fuerte y en Sobreventa"
+            ColorDec=colors_Rec['SobreVenta']
+            Ten="Alcista"
+
+        else:
+            Dec="No Definido"
+            ColorDec=colors_Rec['NoDefinido']
+    
+    elif RsiF>70:
+        if 0<=ADxF<=25: #[0 25]
+            Dec="Estable y en Sobrecompra"
+            ColorDec=colors_Rec['SobreCompra']
+            Ten="Bajista"
+        
+        elif 25<ADxF<=50: #[25 50]
+            Dec="Fuerte y en Sobrecompra"
+            ColorDec=colors_Rec['SobreCompra']
+            Ten="Bajista"
+        
+        elif 50<ADxF<=75: #[50 75]
+            Dec="Muy Fuerte y en Sobrecompra"
+            ColorDec=colors_Rec['SobreCompra']
+            Ten="Bajista"
+        
+        elif 75<ADxF<=100: #[75 100]
+            Dec="Extremadamente Fuerte y en Sobrecompra"
+            ColorDec=colors_Rec['SobreCompra']
+
+        else:
+            Dec="No Definido"
+            ColorDec=colors_Rec['NoDefinido']
+    
     return [fig,
         "Estado: Datos descargados",
-        "VENDER",
-        {'background-color': colors_Rec['Vender']}]
-
+        Dec,
+        {'background-color': ColorDec},"RSI: "+str(RsiF)[0:5]+" %","ADX: "+str(ADxF)[0:5]+" %",Ten]
 
 #Graficos Oscilatorios
 
