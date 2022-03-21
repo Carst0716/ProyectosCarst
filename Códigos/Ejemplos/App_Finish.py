@@ -12,9 +12,11 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 
 
-#DASH: 85%
+
+#DASH: 90%
 
 #FASE 1: Obtención de los Datos
 
@@ -45,16 +47,6 @@ def Indicadores(Data):
     Data['RSI']=ta.RSI(Data['Close'],14)
     
     return Data
-
-#FASE 4:  Construcción de la Dashboard
-
-current = datetime.datetime.now()
-cur=str(current.year)+"-"+str(current.month)+"-"+str(current.day)
-
-LastYear=current-datetime.timedelta(days=365*5)
-ly=str(LastYear.year)+"-"+str(LastYear.month)+"-"+str(LastYear.day)
-
-app = dash.Dash(__name__)
 
 colors={
     'background':'#282D39',
@@ -91,6 +83,7 @@ def signal(data):
 
     return (compra,venta)
 
+
 fig=go.Figure()
 
 fig.update_layout(
@@ -113,81 +106,166 @@ fig.update_yaxes(
         gridcolor='#8B8E95')
 
 
-#Layout de la App
+#FASE 4:  Construcción de la Dashboard
 
-app.layout = html.Div([
-    html.Div(
-        children=[
+current = datetime.datetime.now()
+cur=str(current.year)+"-"+str(current.month)+"-"+str(current.day)
+
+LastYear=current-datetime.timedelta(days=365*5)
+ly=str(LastYear.year)+"-"+str(LastYear.month)+"-"+str(LastYear.day)
+
+app = dash.Dash(__name__)
+app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+Entradas=html.Div(
+
+        children=
+    [
 
         dcc.Store(id='store-data', data=[], storage_type='memory'),
-
-        html.H2("PARÁMETROS DE ENTRADA"),  
-        html.H3("Introduzca un Activo"),
+        html.H4("PARÁMETROS DE ENTRADA"),  
+        html.H5("Introduzca un Activo"),
         dcc.Input(id='input', value='COP=X', type='text', style={'marginRight':'10px'}),
-        html.H3("Fecha Inicio"),
+        html.H5("Fecha Inicio"),
         dcc.Input(id='start', value=ly, type='text', style={'marginRight':'10px'}),
-        html.H3("Fecha Final"),
-        dcc.Input(id='end', value=cur, type='text', style={'marginRight':'10px'}),
+        html.H5("Fecha Final"),
+        dcc.Input(id='end', value=cur, type='text', style={'marginRight':'10px'})
+        
 
-        html.H3("Escoja un Indicador de Tendencia"),
-        dcc.Dropdown(id="IndSelectTen",
-            options={
-                "Divisa":"Divisa",
-                "SMA 30":"SMA 30",
-                "SMA 100":"SMA 100",
-                "Bollinger":"Bollinger",
-                "SMA30 vs SMA100":"SMA 30 vs SMA 100"
-                },
-                value="Divisa",
-                searchable=False
-        ),
+    ],className="BoxEntradas")
 
-        html.H3("Señales"),
-        dcc.Checklist(id="OtrasOpc",
-            options={
-                "CV":"Compra / Venta"
+Controles=html.Div(
+
+        children=
+    [
+
+    html.H4("INDICADORES DE TENDENCIA"),
+    dcc.Dropdown(id="IndSelectTen",
+    options={
+             "Divisa":"Divisa",
+             "SMA 30":"SMA 30",
+             "SMA 100":"SMA 100",
+             "Bollinger":"Bollinger",
+             "SMA30 vs SMA100":"SMA 30 vs SMA 100"
             },
-            labelStyle={'color':colors['text']}),
-        
-        html.H3("Escoja un Indicador Oscilatorio"),
-        dcc.Dropdown(id="IndSelectOsc",
-            options={
-                "ADX":"ADX",
-                "RSI":"RSI"
-                }, 
-            value="RSI",
-            searchable=False
-        ),
+        value="Divisa",
+        searchable=False
+            ),
 
-        html.Div(
-            [
-            dcc.Graph(id='ind-tendencias',figure=fig),
-            dcc.Graph(id='ind-oscilatorios',figure=fig),
-            ],
-        ),
+    html.H4("SEÑALES"),
+    dcc.Checklist(id="OtrasOpc",
+    options={
+            "CV":"Compra / Venta"
+            },
+    labelStyle={'color':colors['text']})
+
+    ],className="BoxControles")
+
+Tendencias=html.Div(
+
+        children=
+    [
+
+    dcc.Graph(id='ind-tendencias',figure=fig)
+
+    ],className="BoxGraph")
+
+SugTendencias=html.Div(
+
+        children=
+    [
+
+    html.Div()
+
+    ],className="BoxSug")
+
+indADX=html.Div(
+
+        children=
+    [
+
+    dcc.Graph(id='indADX',figure=fig)
+
+    ],className="BoxGraph")
+SugADX=html.Div(
+
+        children=
+    [
+
+    html.Div(),
+    html.Div(id="AporteADX",className="ADX")
+
+    ],className="BoxSug")
+
+indRSI=html.Div(
+
+        children=
+    [
+
+    dcc.Graph(id='indRSI',figure=fig)
+
+    ],className="BoxGraph")
+SugRSI=html.Div(
+
+        children=
+    [
+
+    html.Div(),
+    html.Div(id="AporteRSI",className="RSI"),
+    html.Div(id="Tendencia",className="Tendencia"),
+
+    ],className="BoxSug")
+
+Salidas=html.Div(
+
+        children=
+    [
         
-        html.Div(id='Estado Final'),
-        html.H3(id="EstadoIni"),
-        html.H3(id="EstadoFin"),
-        
-        html.Div([
-        html.Div(id="AporteADX",className="ADX"),
-        html.Div(id="AporteRSI",className="RSI"),
-        html.Div(id="Tendencia",className="Tendencia"),
         html.Div(id="Recomendacion",className="RecCompra")
-        ],className="RecDIV")
-                ])
 
-                    ])
-
-#Estado Inicial
-
-@app.callback(
-    Output('EstadoIni','children'),
-    Input('input','value')
+    ]
 )
-def Estado(input_value):
-    return "Estado: Descargando "+input_value
+
+row = html.Div(
+    [
+        dbc.Row(dbc.Col(html.Div("ESTUDIO FOREX BASADO EN TRADING ALGORIMICO", className="Titulo"))),
+       
+        dbc.Row(
+            [
+                dbc.Col(Entradas),
+                dbc.Col(Controles),
+                
+            ]
+        ),
+
+        dbc.Row(
+            [
+                dbc.Col(Tendencias),
+                dbc.Col(SugTendencias),
+            ]
+        ),
+
+        dbc.Row(
+            [
+                dbc.Col(indRSI),
+                dbc.Col(SugRSI),
+            ]
+        ),
+
+        dbc.Row(
+            [
+                dbc.Col(indADX),
+                dbc.Col(SugADX),
+            ]
+        ),
+
+        dbc.Row(Salidas),
+        dbc.Row(dbc.Col(html.Div("Dashboard construida por Carlos M. Ariza - Técnico en Programación para Analítica de Datos - SENA Marzo de 2022", className="Creditos"))),
+
+    ])
+
+app.layout = dbc.Container(row, class_name="BoxMain")
+
 
 #Descarga
 
@@ -213,11 +291,11 @@ def update_value(cur, ly, input_data):
 
     return Data.to_dict('records')
 
+
 #Graficos de Tendencias
 
 @app.callback(
     Output('ind-tendencias', 'figure'),
-    Output('EstadoFin','children'),
     Output('Recomendacion','children'),
     Output('Recomendacion','style'),
     Output('AporteADX','children'),
@@ -517,56 +595,52 @@ def PlotTen(SelectTen, data, input_data, Opc):
             Dec="No Definido"
             ColorDec=colors_Rec['NoDefinido']
     
-    return [fig,
-        "Estado: Datos descargados",
-        Dec,
+    return [fig,Dec,
         {'background-color': ColorDec},"RSI: "+str(RsiF)[0:5]+" %","ADX: "+str(ADxF)[0:5]+" %",Ten]
 
 #Graficos Oscilatorios
 
 @app.callback(
-    Output('ind-oscilatorios', 'figure'),
-    Input('IndSelectOsc','value'),
+    Output('indADX', 'figure'),
     Input('store-data','data'),
     Input('input','value')
 )
-def PlotOsc(SelectOsc, data, input_data):
+def PlotADX(data, input_data):
     
     df=pd.DataFrame(data)
     fig = go.Figure()
 
-    if SelectOsc=="ADX":
-         fig.add_trace(
+    fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectOsc],
+                    y=df["ADX"],
                     marker_color='Gold',
                     fill='tonexty'      
                     ))
 
-         x0 = df.index[0]       
-         x1 = df.index[-1] 
-         fig.add_shape(type="line",
+    x0 = df.index[0]       
+    x1 = df.index[-1] 
+    fig.add_shape(type="line",
             x0=x0, y0=25, x1=x1, y1=25,
             line=dict(color="#F23E08",width=2),
         )
 
-         x0 = df.index[0]       
-         x1 = df.index[-1] 
-         fig.add_shape(type="line",
+    x0 = df.index[0]       
+    x1 = df.index[-1] 
+    fig.add_shape(type="line",
             x0=x0, y0=50, x1=x1, y1=50,
             line=dict(color="#0DC1F7",width=2),
         )
 
         
-         x0 = df.index[0]       
-         x1 = df.index[-1] 
-         fig.add_shape(type="line",
+    x0 = df.index[0]       
+    x1 = df.index[-1] 
+    fig.add_shape(type="line",
             x0=x0, y0=75, x1=x1, y1=75,
             line=dict(color="#3EF208",width=2)
         )
 
-         fig.add_annotation(x=max(df.index)/4, y=75-7,
+    fig.add_annotation(x=max(df.index)/4, y=75-7,
             text="MUY FUERTE",
             font=dict(
             family="Courier New, monospace",
@@ -580,7 +654,7 @@ def PlotOsc(SelectOsc, data, input_data):
             bgcolor="#3EF208",
             opacity=0.8)
 
-         fig.add_annotation(x=max(df.index)/4, y=50-7,
+    fig.add_annotation(x=max(df.index)/4, y=50-7,
             text="FUERTE",
             font=dict(
             family="Courier New, monospace",
@@ -594,7 +668,7 @@ def PlotOsc(SelectOsc, data, input_data):
             bgcolor="#0DC1F7",
             opacity=0.8)
 
-         fig.add_annotation(x=max(df.index)/4, y=25-7,
+    fig.add_annotation(x=max(df.index)/4, y=25-7,
             text="AUSENCIA",
             font=dict(
             family="Courier New, monospace",
@@ -608,11 +682,54 @@ def PlotOsc(SelectOsc, data, input_data):
             bgcolor="#F23E08",
             opacity=0.8)
 
-    elif SelectOsc=="RSI":
+    fig.update_layout(
+         title={
+                'text':"ADX para "+input_data,
+                'y':0.9, # new
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top' # new
+                },
+         yaxis_title="ADX del Activo",
+         yaxis_range=[0,100])
+
+    fig.update_layout(
+
+        showlegend=False,
+        xaxis_title="Muestras",
+        paper_bgcolor=colors['background'],
+        plot_bgcolor=colors['background'],
+        font_color=colors['titles'],
+        title_font_color=colors['titles'])
+
+    fig.update_xaxes(
+        showline=True,
+        linewidth=2,
+        linecolor='#8B8E95',
+        gridcolor='#8B8E95')
+    
+    fig.update_yaxes(
+        showline=True,
+        linewidth=2,
+        linecolor='#8B8E95',
+        gridcolor='#8B8E95')
+
+    return fig
+
+@app.callback(
+    Output('indRSI', 'figure'),
+    Input('store-data','data'),
+    Input('input','value')
+)
+def PlotRSI(data, input_data):
+    
+         df=pd.DataFrame(data)
+         fig = go.Figure()
+
          fig.add_trace(
             go.Scatter(
                     x=df.index,
-                    y=df[SelectOsc],
+                    y=df["RSI"],
                     marker_color='Gold',
                     fill=None      
                     ))
@@ -659,39 +776,39 @@ def PlotOsc(SelectOsc, data, input_data):
             bgcolor="#F23E08",
             opacity=0.8)
 
-    fig.update_layout(
-         title={
-                'text': SelectOsc+" para "+input_data,
-                'y':0.9, # new
-                'x':0.5,
-                'xanchor': 'center',
-                'yanchor': 'top' # new
-                },
-         yaxis_title=SelectOsc+" del Activo",
-         yaxis_range=[0,100])
+         fig.update_layout(
+                title={
+                        'text': "RSI para "+input_data,
+                        'y':0.9, # new
+                        'x':0.5,
+                        'xanchor': 'center',
+                        'yanchor': 'top' # new
+                        },
+                yaxis_title="RSI del Activo",
+                yaxis_range=[0,100])
 
-    fig.update_layout(
+         fig.update_layout(
 
-        showlegend=False,
-        xaxis_title="Muestras",
-        paper_bgcolor=colors['background'],
-        plot_bgcolor=colors['background'],
-        font_color=colors['titles'],
-        title_font_color=colors['titles'])
+                showlegend=False,
+                xaxis_title="Muestras",
+                paper_bgcolor=colors['background'],
+                plot_bgcolor=colors['background'],
+                font_color=colors['titles'],
+                title_font_color=colors['titles'])
 
-    fig.update_xaxes(
-        showline=True,
-        linewidth=2,
-        linecolor='#8B8E95',
-        gridcolor='#8B8E95')
-    
-    fig.update_yaxes(
-        showline=True,
-        linewidth=2,
-        linecolor='#8B8E95',
-        gridcolor='#8B8E95')
+         fig.update_xaxes(
+                showline=True,
+                linewidth=2,
+                linecolor='#8B8E95',
+                gridcolor='#8B8E95')
+            
+         fig.update_yaxes(
+                showline=True,
+                linewidth=2,
+                linecolor='#8B8E95',
+                gridcolor='#8B8E95')
 
-    return fig
+         return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
