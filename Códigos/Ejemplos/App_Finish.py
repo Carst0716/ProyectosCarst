@@ -14,9 +14,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-
-
-#DASH: 90%
+#DASH: 95%
 
 #FASE 1: Obtención de los Datos
 
@@ -134,13 +132,30 @@ Entradas=html.Div(
 
     ],className="BoxEntradas")
 
-Controles=html.Div(
+Tendencias=html.Div(
 
         children=
     [
 
-    html.H4("INDICADORES DE TENDENCIA"),
-    dcc.Dropdown(id="IndSelectTen",
+    dcc.Graph(id='ind-tendencias',figure=fig),
+    
+
+    ],className="BoxGraph")
+
+SugTendencias=html.Div(
+
+        children=
+    [
+    
+    html.Div(
+        [
+    html.Div("Actual: ",id="ActualTen",className="SugTen"),
+    html.Div("Máximo: ",id="MaximoTen",className="SugTen"),
+    html.Div("Mínimo: ",id="MinimoTen",className="SugTen"),
+    html.Div("Promedio: ",id="PromedioTen",className="SugTen"),
+    html.Div("D. Estandar: ",id="StdTen",className="SugTen"),
+    html.Div("INDICADORES",className="SugTen"),
+    html.Div(dcc.Dropdown(id="IndSelectTen",
     options={
              "Divisa":"Divisa",
              "SMA 30":"SMA 30",
@@ -150,34 +165,18 @@ Controles=html.Div(
             },
         value="Divisa",
         searchable=False
-            ),
+            ),className="SugTenOption"),
 
-    html.H4("SEÑALES"),
-    dcc.Checklist(id="OtrasOpc",
+    html.Div("SEÑALES",className="SugTen"),
+    html.Div(dcc.Checklist(id="OtrasOpc",
     options={
             "CV":"Compra / Venta"
             },
-    labelStyle={'color':colors['text']})
+    labelStyle={'color':colors['text']}),className="SugTenOption")
+        ],className="SugBoxTen"
+    ),
 
-    ],className="BoxControles")
-
-Tendencias=html.Div(
-
-        children=
-    [
-
-    dcc.Graph(id='ind-tendencias',figure=fig)
-
-    ],className="BoxGraph")
-
-SugTendencias=html.Div(
-
-        children=
-    [
-
-    html.Div()
-
-    ],className="BoxSug")
+    ],className="BoxSugTen")
 
 indADX=html.Div(
 
@@ -191,9 +190,17 @@ SugADX=html.Div(
 
         children=
     [
-
-    html.Div(),
-    html.Div(id="AporteADX",className="ADX")
+    
+    html.Div(
+        [
+    html.Div("Actual: ",id="ActualADX",className="SugTen"),
+    html.Div("Máximo: ",id="MaximoADX",className="SugTen"),
+    html.Div("Mínimo: ",id="MinimoADX",className="SugTen"),
+    html.Div("Promedio: ",id="PromedioADX",className="SugTen"),
+    html.Div("D. Estandar: ",id="StdADX",className="SugTen"),
+    html.Div("Fuerza: ",id="Fuerza",className="SugTen")
+        ],className="SugBox"
+    ),
 
     ],className="BoxSug")
 
@@ -209,31 +216,27 @@ SugRSI=html.Div(
 
         children=
     [
-
-    html.Div(),
-    html.Div(id="AporteRSI",className="RSI"),
-    html.Div(id="Tendencia",className="Tendencia"),
+    
+    html.Div(
+        [
+    html.Div("Actual: ",id="ActualRSI",className="SugTen"),
+    html.Div("Máximo: ",id="MaximoRSI",className="SugTen"),
+    html.Div("Mínimo: ",id="MinimoRSI",className="SugTen"),
+    html.Div("Promedio: ",id="PromedioRSI",className="SugTen"),
+    html.Div("D. Estandar: ",id="StdRSI",className="SugTen"),
+    html.Div("Tendencia: ",id="Tendencia",className="SugTen"),
+        ],className="SugBox"
+    ),
 
     ],className="BoxSug")
 
-Salidas=html.Div(
-
-        children=
-    [
-        
-        html.Div(id="Recomendacion",className="RecCompra")
-
-    ]
-)
-
 row = html.Div(
     [
-        dbc.Row(dbc.Col(html.Div("ESTUDIO FOREX BASADO EN TRADING ALGORIMICO", className="Titulo"))),
+        dbc.Row(dbc.Col(html.Div("ESTUDIO FOREX BASADO EN TRADING ALGORITMICO", className="Titulo"))),
        
         dbc.Row(
             [
                 dbc.Col(Entradas),
-                dbc.Col(Controles),
                 
             ]
         ),
@@ -259,8 +262,14 @@ row = html.Div(
             ]
         ),
 
-        dbc.Row(Salidas),
-        dbc.Row(dbc.Col(html.Div("Dashboard construida por Carlos M. Ariza - Técnico en Programación para Analítica de Datos - SENA Marzo de 2022", className="Creditos"))),
+        dbc.Row(dbc.Col(
+            
+            html.Div([
+
+                html.Div("Carlos M. Ariza - Técnico en Programación para Analítica de Datos - SENA Marzo de 2022"),
+                html.Div("ariza.cm@gmail.com  -  3176065917")
+            
+            ],className="Creditos"))),
 
     ])
 
@@ -282,12 +291,10 @@ def update_value(cur, ly, input_data):
 
     #FASE 2: Refinación de los datos
 
-    """
     print(Data.info())
     print(Data.head())
     print(Data.describe())
     print(Data[Data.duplicated(keep='first')])
-    """
 
     return Data.to_dict('records')
 
@@ -295,12 +302,27 @@ def update_value(cur, ly, input_data):
 #Graficos de Tendencias
 
 @app.callback(
-    Output('ind-tendencias', 'figure'),
-    Output('Recomendacion','children'),
-    Output('Recomendacion','style'),
-    Output('AporteADX','children'),
-    Output('AporteRSI','children'),
+    Output('ActualTen','children'),
+    Output('MaximoTen','children'),
+    Output('MinimoTen','children'),
+    Output('PromedioTen','children'),
+    Output('StdTen','children'),
+
+    Output('ActualADX','children'),
+    Output('MaximoADX','children'),
+    Output('MinimoADX','children'),
+    Output('PromedioADX','children'),
+    Output('StdADX','children'),
+    Output('Fuerza','children'),
+
+    Output('ActualRSI','children'),
+    Output('MaximoRSI','children'),
+    Output('MinimoRSI','children'),
+    Output('PromedioRSI','children'),
+    Output('StdRSI','children'),
     Output('Tendencia','children'),
+
+    Output('ind-tendencias', 'figure'),
     Input('IndSelectTen','value'),
     Input('store-data','data'),
     Input('input','value'),
@@ -512,32 +534,54 @@ def PlotTen(SelectTen, data, input_data, Opc):
         'SobreVenta':'#F64005',
         'NoDefinido':'#00197F'}
 
-#TOMAR LA DECISIÓN...
+    #SALIDAS
 
+    #Tendencia
 
-    #Pesos por Indicador
+    ActualTen=list(df["Close"])[-1]
+    MaximoTen=df["Close"].max()
+    MinimoTen=df["Close"].min()
+    PromedioTen=df["Close"].mean()
+    StdTen=df["Close"].std()
 
-    RsiF=list(df["RSI"])[-1]
-    ADxF=list(df["ADX"])[-1]
+    #RSI
+    
+    ActualRSI=list(df["RSI"])[-1]
+    MaximoRSI=df["RSI"].max()
+    MinimoRSI=df["RSI"].min()
+    PromedioRSI=df["RSI"].mean()
+    StdRSI=df["RSI"].std()
+
+    #ADX
+    
+    ActualADX=list(df["ADX"])[-1]
+    MaximoADX=df["ADX"].max()
+    MinimoADX=df["ADX"].min()
+    PromedioADX=df["ADX"].mean()
+    StdADX=df["ADX"].std()
+
+    RsiF=ActualRSI
+    ADxF=ActualADX
+
     
     if 30<=RsiF<=70: #[30 70]
         if 0<=ADxF<=25: #[0 25]
-            Dec="Estable con Volatilidad Moderada"
+            Dec="Baja"
             ColorDec=colors_Rec['Moderada']
             Ten="Estable"
         
         elif 25<ADxF<=50: #[25 50]
-            Dec="Fuerte con Volatilidad Moderada"
+            Dec="Media"
             ColorDec=colors_Rec['Moderada']
             Ten="Estable"
         
         elif 50<ADxF<=75: #[50 75]
-            Dec="Muy Fuerte con Volatilidad Moderada"
+            Dec="Alta"
             ColorDec=colors_Rec['Moderada']
             Ten="Estable"
         
         elif 75<ADxF<=100: #[75 100]
-            Dec="Extremadamente Fuerte con Volatilidad Moderada"
+            Dec="Muy Alta"
             ColorDec=colors_Rec['Moderada']
             Ten="Estable"
 
@@ -548,22 +592,22 @@ def PlotTen(SelectTen, data, input_data, Opc):
     
     elif RsiF<30:
         if 0<=ADxF<=25: #[0 25]
-            Dec="Estable y en Sobreventa"
+            Dec="Baja"
             ColorDec=colors_Rec['SobreVenta']
             Ten="Alcista"
         
         elif 25<ADxF<=50: #[25 50]
-            Dec="Fuerte y en Sobreventa"
+            Dec="Media"
             ColorDec=colors_Rec['SobreVenta']
             Ten="Alcista"
         
         elif 50<ADxF<=75: #[50 75]
-            Dec="Muy Fuerte y en Sobreventa"
+            Dec="Alta"
             ColorDec=colors_Rec['SobreVenta']
             Ten="Alcista"
         
         elif 75<ADxF<=100: #[75 100]
-            Dec="Extremadamente Fuerte y en Sobreventa"
+            Dec="Muy Alta"
             ColorDec=colors_Rec['SobreVenta']
             Ten="Alcista"
 
@@ -573,30 +617,52 @@ def PlotTen(SelectTen, data, input_data, Opc):
     
     elif RsiF>70:
         if 0<=ADxF<=25: #[0 25]
-            Dec="Estable y en Sobrecompra"
+            Dec="Baja"
             ColorDec=colors_Rec['SobreCompra']
             Ten="Bajista"
         
         elif 25<ADxF<=50: #[25 50]
-            Dec="Fuerte y en Sobrecompra"
+            Dec="Media"
             ColorDec=colors_Rec['SobreCompra']
             Ten="Bajista"
         
         elif 50<ADxF<=75: #[50 75]
-            Dec="Muy Fuerte y en Sobrecompra"
+            Dec="Alta"
             ColorDec=colors_Rec['SobreCompra']
             Ten="Bajista"
         
         elif 75<ADxF<=100: #[75 100]
-            Dec="Extremadamente Fuerte y en Sobrecompra"
+            Dec="Muy Alta"
             ColorDec=colors_Rec['SobreCompra']
 
         else:
             Dec="No Definido"
             ColorDec=colors_Rec['NoDefinido']
     
-    return [fig,Dec,
-        {'background-color': ColorDec},"RSI: "+str(RsiF)[0:5]+" %","ADX: "+str(ADxF)[0:5]+" %",Ten]
+    return [
+            "Actual: "+str(ActualTen)[0:4],
+            "Máximo: "+str(MaximoTen)[0:4],
+            "Mínimo: "+str(MinimoTen)[0:4],
+            "Promedio: "+str(PromedioTen)[0:4],
+            "D. Estandar: "+str(StdTen)[0:3],
+
+            "Actual: "+str(ADxF)[0:5]+" %",
+            "Máximo: "+str(MaximoADX)[0:2],
+            "Mínimo: "+str(MinimoADX)[0:1],
+            "Promedio: "+str(PromedioADX)[0:2],
+            "D. Estandar: "+str(StdADX)[0:2],
+            "Fuerza: "+Dec,
+
+            "Actual: "+str(RsiF)[0:5]+" %",
+            "Máximo: "+str(MaximoRSI)[0:2],
+            "Mínimo: "+str(MinimoRSI)[0:1],
+            "Promedio: "+str(PromedioRSI)[0:2],
+            "D. Estandar: "+str(StdRSI)[0:2],
+            "Tendencia: "+Ten,
+            
+            fig
+
+            ]
 
 #Graficos Oscilatorios
 

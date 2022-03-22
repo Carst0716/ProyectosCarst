@@ -192,3 +192,52 @@ h1, h2, h3, h4, h5, h6 {
     width: 25%;
     margin: 10
 }
+
+.SugTen
+{
+    color: #ffffff;
+    width: 170px;
+    height: 30px;
+    font-size: 18px;
+    text-align: left;
+    font-weight: bold;
+    padding: 0px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+}
+
+.SugBox
+{
+    margin-top: 80px;
+    margin-left: 30px;
+    /*background-color: #F64005;*/
+}
+
+.SugBoxTen
+{
+    margin-top: 10px;
+    margin-left: 30px;
+    /*background-color: #F64005;*/
+}
+
+.BoxSugTen
+{
+    background-color: #282D39;
+    width: 275px;
+    height: 492px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    padding: 20px;
+    border-radius: 15px;
+
+}
+
+.SugTenOption
+{
+    margin-top: -20px;
+    margin-left: -30px;
+    margin-bottom: 20px;
+
+}
