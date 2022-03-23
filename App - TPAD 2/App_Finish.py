@@ -568,6 +568,16 @@ def PlotTen(SelectTen, data, input_data, Opc):
     PromedioTen=df["Close"].mean()
     StdTen=df["Close"].std()
 
+    """    
+    x0 = df.index[0]       
+    x1 = df.index[-1] 
+    fig.add_shape(type="line",
+            x0=x0, y0=PromedioTen, x1=x1, y1=PromedioTen,
+            line=dict(color="Green",width=1),
+        )
+        
+    """
+
     #RSI
     
     ActualRSI=list(df["RSI"])[-1]
