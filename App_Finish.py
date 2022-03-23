@@ -14,7 +14,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-#DASH: 97%
+#DASH: 100%
 
 #FASE 1: Obtención de los Datos
 
@@ -148,7 +148,7 @@ Titulo=html.Div(
         children=
     [
 
-        html.Div("Análisis Técnico Basado en Trading Algorítmico", className="Titulo")
+        html.Div("Análisis Técnico de Activos FOREX para la Toma de Decisiones", className="Titulo")
 
     ])
 
@@ -422,7 +422,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["upper_band"],
-                    marker_color='#124702',
+                    marker_color='#7B7E8D',
                     fill=None
                     ))
 
@@ -430,7 +430,7 @@ def PlotTen(SelectTen, data, input_data, Opc):
             go.Scatter(
                     x=df.index,
                     y=df["lower_band"],
-                    marker_color='#124702',
+                    marker_color='#7B7E8D',
                     fill='tonexty'
                     ))
 
