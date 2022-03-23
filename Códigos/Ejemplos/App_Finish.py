@@ -14,7 +14,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-#DASH: 95%
+#DASH: 97%
 
 #FASE 1: Obtención de los Datos
 
@@ -121,16 +121,36 @@ Entradas=html.Div(
     [
 
         dcc.Store(id='store-data', data=[], storage_type='memory'),
-        html.H4("PARÁMETROS DE ENTRADA"),  
-        html.H5("Introduzca un Activo"),
-        dcc.Input(id='input', value='COP=X', type='text', style={'marginRight':'10px'}),
-        html.H5("Fecha Inicio"),
-        dcc.Input(id='start', value=ly, type='text', style={'marginRight':'10px'}),
-        html.H5("Fecha Final"),
-        dcc.Input(id='end', value=cur, type='text', style={'marginRight':'10px'})
+
+        html.Div([
+        html.Div("Introduzca un Activo", className="textInput"),
+        dcc.Input(id='input', value='COP=X', type='text', className="input")
+                ], className="inputsBox"),
+
+        html.Div([
+        html.Div("Fecha Inicio", className="textInput"),
+        dcc.Input(id='start', value=ly, type='text', className="input")
+        ], className="inputsBox"),
+
+        html.Div([
+        html.Div("Fecha Final", className="textInput"),
+        dcc.Input(id='end', value=cur, type='text', className="input")
+        ], className="inputsBox")
         
 
     ],className="BoxEntradas")
+
+#dbc.Row(dbc.Col(html.H3("ANÁLISIS TÉCNICO BASADO EN TRADING ALGORÍTMICO", className="Titulo"))),
+       
+
+Titulo=html.Div(
+
+        children=
+    [
+
+        html.Div("Análisis Técnico Basado en Trading Algorítmico", className="Titulo")
+
+    ])
 
 Tendencias=html.Div(
 
@@ -165,7 +185,7 @@ SugTendencias=html.Div(
             },
         value="Divisa",
         searchable=False
-            ),className="SugTenOption"),
+            ,className="SugTenInd")),
 
     html.Div("SEÑALES",className="SugTen"),
     html.Div(dcc.Checklist(id="OtrasOpc",
@@ -232,11 +252,11 @@ SugRSI=html.Div(
 
 row = html.Div(
     [
-        dbc.Row(dbc.Col(html.Div("ESTUDIO FOREX BASADO EN TRADING ALGORITMICO", className="Titulo"))),
-       
+        
         dbc.Row(
             [
                 dbc.Col(Entradas),
+                dbc.Col(Titulo)
                 
             ]
         ),
@@ -289,12 +309,16 @@ def update_value(cur, ly, input_data):
     df=obtencionDatos(input_data,'yahoo',cur,ly)
     Data=Indicadores(df)
 
-    #FASE 2: Refinación de los datos
+    print(df)
 
+    #FASE 2: Refinación de los datos
+    
+    """
     print(Data.info())
     print(Data.head())
     print(Data.describe())
     print(Data[Data.duplicated(keep='first')])
+    """
 
     return Data.to_dict('records')
 
@@ -640,24 +664,24 @@ def PlotTen(SelectTen, data, input_data, Opc):
             ColorDec=colors_Rec['NoDefinido']
     
     return [
-            "Actual: "+str(ActualTen)[0:4],
-            "Máximo: "+str(MaximoTen)[0:4],
-            "Mínimo: "+str(MinimoTen)[0:4],
-            "Promedio: "+str(PromedioTen)[0:4],
-            "D. Estandar: "+str(StdTen)[0:3],
+            "Actual: "+str(int(ActualTen)),
+            "Máximo: "+str(int(MaximoTen)),
+            "Mínimo: "+str(int(MinimoTen)),
+            "Promedio: "+str(int(PromedioTen)),
+            "D. Estandar: "+str(int(StdTen)),
 
-            "Actual: "+str(ADxF)[0:5]+" %",
-            "Máximo: "+str(MaximoADX)[0:2],
-            "Mínimo: "+str(MinimoADX)[0:1],
-            "Promedio: "+str(PromedioADX)[0:2],
-            "D. Estandar: "+str(StdADX)[0:2],
+            "Actual: "+str(int(ADxF))+" %",
+            "Máximo: "+str(int(MaximoADX)),
+            "Mínimo: "+str(int(MinimoADX)),
+            "Promedio: "+str(int(PromedioADX)),
+            "D. Estandar: "+str(int(StdADX)),
             "Fuerza: "+Dec,
 
-            "Actual: "+str(RsiF)[0:5]+" %",
-            "Máximo: "+str(MaximoRSI)[0:2],
-            "Mínimo: "+str(MinimoRSI)[0:1],
-            "Promedio: "+str(PromedioRSI)[0:2],
-            "D. Estandar: "+str(StdRSI)[0:2],
+            "Actual: "+str(int(RsiF))+" %",
+            "Máximo: "+str(int(MaximoRSI)),
+            "Mínimo: "+str(int(MinimoRSI)),
+            "Promedio: "+str(int(PromedioRSI)),
+            "D. Estandar: "+str(int(StdRSI)),
             "Tendencia: "+Ten,
             
             fig
